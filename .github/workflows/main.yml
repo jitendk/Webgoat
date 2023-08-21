@@ -1,26 +1,52 @@
-name: BlackDuck Java Example
-on: push 
-  # pull_request:
-   #  branches:
-    #   - '2.0'
-env:
-  JAVA_VERSION: 11
+name: bd-sig-action
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 jobs:
-  example_job:
-    name: BlackDuck Java Example Job
-    runs-on: ubuntu-latest 
+  blackduck:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3 
-
-    - name: Optionally Set up JDK 
-      uses: actions/setup-java@v1
+    - name: Checkout Source
+      uses: actions/checkout@v3
+    - name: Setup Java JDK
+      uses: actions/setup-java@v3
       with:
-        java-version: '11'   
-
-    #run detect
-    - name: Synopsys Detect
-      run:
-        curl -s -L https://detect.synopsys.com/detect7.sh > detect7.sh;
-        bash detect7.sh --blackduck.url=https://testing.blackduck.synopsys.com --blackduck.api.token=MmY3MTE2M2UtM2Y0Ny00NTdiLTkxZDktOTkwYTA0NTEzNWQxOjNmMmQ5MWFmLTlmMTQtNDUzYS1hZTU4LWRiYzIyZjAzYmY0Ng== 
-        --detect.project.name=PROJECtestGithub
+        java-version: 17
+        distribution: microsoft
+        cache: maven
+    - name: Maven Build
+      run: mvn -B -DskipTests package
+    - name: Black Duck Full Scan
+      if: ${{ github.event_name != 'pull_request' }}
+      uses: synopsys-sig/synopsys-action@v1.2.0
+      env:
+        DETECT_PROJECT_NAME: ${{ github.event.repository.name }}
+        DETECT_PROJECT_VERSION_NAME: ${{ github.ref_name }}
+        DETECT_CODE_LOCATION_NAME: ${{ github.event.repository.name }}-${{ github.ref_name }}
+      with:
+        blackduck_url: ${{ vars.BLACKDUCK_URL }}
+        blackduck_apiToken: ${{ secrets.BLACKDUCK_API_TOKEN }}
+        blackduck_scan_full: true
+        blackduck_scan_failure_severities: 'BLOCKER'
+    - name: Black Duck PR Scan
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: synopsys-sig/synopsys-action@v1.2.0
+      env:
+        DETECT_PROJECT_NAME: ${{ github.event.repository.name }}
+        DETECT_PROJECT_VERSION_NAME: ${{ github.base_ref }}
+        DETECT_CODE_LOCATION_NAME: ${{ github.event.repository.name }}-${{ github.base_ref }}
+      with:
+        blackduck_url: ${{ vars.BLACKDUCK_URL }}
+        blackduck_apiToken: ${{ secrets.BLACKDUCK_API_TOKEN }}
+        blackduck_scan_full: false
+        blackduck_automation_prcomment: true
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+#    - name: Save Logs
+#      if: always()
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: bridge-logs
+#        path: ${{ github.workspace }}/.bridge
