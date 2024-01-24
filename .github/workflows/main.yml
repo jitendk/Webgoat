@@ -23,4 +23,4 @@ jobs:
       run:
         curl -s -L https://detect.synopsys.com/detect8.sh > detect8.sh;
         bash detect8.sh --blackduck.url=https://testing.blackduck.synopsys.com --blackduck.api.token=MmY3MTE2M2UtM2Y0Ny00NTdiLTkxZDktOTkwYTA0NTEzNWQxOjNmMmQ5MWFmLTlmMTQtNDUzYS1hZTU4LWRiYzIyZjAzYmY0Ng== 
-        --detect.project.name=PROJECtestGithub
+        --detect.project.name=PROJECtestGithub_test
