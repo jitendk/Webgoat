@@ -1,0 +1,3 @@
+analyze:
+  cov-analyze-args:
+    - "--disable-sigma"
