@@ -1,3 +1,6 @@
 analyze:
   cov-analyze-args:
     - "--disable-sigma"
+capture:
+  build:
+    build-command: mvn clean install -DskipTest 
