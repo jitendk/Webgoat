@@ -3,4 +3,4 @@ analyze:
     - "--disable-sigma"
 capture:
   build:
-    build-command: mvn clean install -DskipTest 
+    build-command: mvn clean install -DskipTests
